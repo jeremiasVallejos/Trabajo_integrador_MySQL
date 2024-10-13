@@ -1,13 +1,13 @@
 const { DataTypes } = require('sequelize');
 const sequelize = require('../conexion/database');
 
-const Actor = sequelize.define('Actor', {
+const Actor = sequelize.define('actor', {
     nombre: {
     type: DataTypes.STRING,
     allowNull: false
     }
 }, {
-    tableName: 'Actor',
+    tableName: 'actor',
     timestamps: false
 });
 

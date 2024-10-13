@@ -12,7 +12,7 @@ const ContenidoActor = sequelize.define('ContenidoActor', {
     actor_id: {
     type: DataTypes.INTEGER,
     references: {
-        model: 'Actores',
+        model: 'Actor',
         key: 'id'
     }
     }

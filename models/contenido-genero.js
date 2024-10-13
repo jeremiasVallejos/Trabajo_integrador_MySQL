@@ -3,26 +3,28 @@ const sequelize = require('../conexion/database');
 const Contenido = require('./contenido');
 const Genero = require('./genero');
 
-const ContenidoGenero = sequelize.define('ContenidoGenero', {
+const ContenidoGenero = sequelize.define('contenidogenero', {
     ContenidoId: {
         type: DataTypes.INTEGER,
         references: {
-            model: Contenido, // Referencio al modelo Contenido
+            model: Contenido,
             key: 'id'
         },
-        field: 'contenido_id' // Nombre de la columna en la base de datos
+        field: 'ContenidoId',
+        allowNull: false
     },
     GeneroId: {
         type: DataTypes.INTEGER,
         references: {
-            model: Genero, // ReferencioS al modelo Genero
+            model: Genero,
             key: 'id'
         },
-        field: 'genero_id' // Nombre de la columna en la base de datos
+        field: 'GeneroId',
+        allowNull: false
     }
 }, {
-    tableName: 'ContenidoGenero',
-    timestamps: false
+    tableName: 'contenidogenero',
+    timestamps: false,
 });
 
 module.exports = ContenidoGenero;
