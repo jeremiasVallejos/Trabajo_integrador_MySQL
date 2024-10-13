@@ -7,7 +7,7 @@ const Actor = sequelize.define('Actor', {
     allowNull: false
     }
 }, {
-    tableName: 'Actores',
+    tableName: 'Actor',
     timestamps: false
 });
 

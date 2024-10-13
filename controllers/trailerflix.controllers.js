@@ -1,5 +1,13 @@
-const getAllContent = (req, res) => {
+const Categoria = require("../models/categoria");
+
+const getAllContent = async (req, res) => {
   try {
+    const getCategory = await Categoria.findAll()
+
+    if(!getCategory.length){
+      return res.send('No hay categorias creadas')
+    }
+    return res.json(getCategory)
   } catch (error) {
     console.log(error);
   }

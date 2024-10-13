@@ -6,12 +6,8 @@ const Categoria = sequelize.define('Categoria', {
         type: DataTypes.STRING,
         allowNull: false
     },
-    descripcion: {
-        type: DataTypes.TEXT,
-        allowNull: true
-    }
 }, {
-    tableName: 'Categorias',
+    tableName: 'Categoria',
     timestamps: false
 });
 

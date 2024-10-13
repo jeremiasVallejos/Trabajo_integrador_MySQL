@@ -1,13 +1,11 @@
 const express = require("express");
 const app = express();
-
-//const db = require("./conexion/database");
+const router = require('./routes/routes')
+const db = require("./conexion/database");
 
 // Middlewares
 app.use(express.json());
-app.use("/contenido", (req, res) =>{
-    res.send('hello')
-});
+app.use("/contenido", router);
 
 // Server
 const PORT = process.env.PORT || 3000;
