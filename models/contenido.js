@@ -1,13 +1,19 @@
 const { DataTypes } = require('sequelize');
 const sequelize = require('../conexion/database');
+const Categoria = require('./categoria');
 
-const Contenido = sequelize.define('Contenido', {
+const Contenido = sequelize.define('contenido', {
     titulo: {
         type: DataTypes.STRING,
         allowNull: false
     },
     categoria: {
-        type: DataTypes.ENUM('Serie', 'Película'),
+        type: DataTypes.INTEGER,
+        references: {
+            model: Categoria,
+            key: 'id'
+        },
+        field: 'CategoriaId',
         allowNull: false
     },
     resumen: {
@@ -20,7 +26,7 @@ const Contenido = sequelize.define('Contenido', {
         type: DataTypes.STRING
     }
 }, {
-    tableName: 'Contenido',
+    tableName: 'contenido',
     timestamps: false
 });
 
