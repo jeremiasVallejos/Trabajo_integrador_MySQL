@@ -3,6 +3,7 @@ const router = express.Router();
 const {
   getAllContent,
   getContentById,
+  getContentByTitle,
   addNewContent,
   updateContentById,
   deleteContentById,
@@ -11,6 +12,8 @@ const {
 router.get("/", getAllContent);
 
 router.get("/:id", getContentById);
+
+router.get("/title/:title", getContentByTitle)
 
 router.post("/", addNewContent);
 
