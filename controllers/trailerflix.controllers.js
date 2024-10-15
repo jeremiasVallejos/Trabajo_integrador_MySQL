@@ -1,5 +1,6 @@
 const Categoria = require("../models/categoria");
 const Contenido = require("../models/contenido");
+const ContenidoActor = require("../models/contenido-actores");
 const ContenidoGenero = require("../models/contenido-genero");
 
 const getAllContent = async (req, res) => {
@@ -132,14 +133,46 @@ const updateContentById = async (req, res) => {
   }
 };
 
-const deleteContentById = (req, res) => {
+const deleteContentById = async (req, res) => {
   try {
+    const { id } = req.params;
 
+    // Eliminar registros relacionados en ContenidoActor
+    await ContenidoActor.destroy({
+      where: {
+        ContenidoId: parseInt(id),
+      },
+    });
+
+    // Eliminar registros relacionados en ContenidoGenero
+    await ContenidoGenero.destroy({
+      where: {
+        ContenidoId: parseInt(id),
+      },
+    });
+
+    // Ahora eliminar el contenido principal
+    const deleteContent = await Contenido.destroy({
+      where: {
+        id: parseInt(id),
+      },
+    });
+
+    if (deleteContent === 0) {
+      return res.status(400).json({
+        message: `No se pudo eliminar el contenido.`,
+      });
+    }
+
+    return res.status(200).json({
+      message: "El contenido se eliminó satisfactoriamente.",
+    });
   } catch (error) {
     console.log(error);
-    res.status(500).send("Ocurrió un error al obtener los contenidos.");
+    res.status(500).send("Ocurrió un error al eliminar el contenido.");
   }
 };
+
 
 module.exports = {
   getAllContent,
