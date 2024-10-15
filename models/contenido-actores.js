@@ -1,15 +1,15 @@
 const { DataTypes } = require('sequelize');
 const sequelize = require('../conexion/database');
 
-const ContenidoActor = sequelize.define('ContenidoActor', {
-    contenido_id: {
+const ContenidoActor = sequelize.define('contenidoactor', {
+    ContenidoId: {
     type: DataTypes.INTEGER,
     references: {
         model: 'Contenido',
         key: 'id'
     }
     },
-    actor_id: {
+    ActorId: {
     type: DataTypes.INTEGER,
     references: {
         model: 'Actor',
@@ -17,7 +17,7 @@ const ContenidoActor = sequelize.define('ContenidoActor', {
     }
     }
 }, {
-    tableName: 'ContenidoActor',
+    tableName: 'contenidoactor',
     timestamps: false
 });
 
