@@ -78,7 +78,7 @@ const addNewContent = async (req, res) => {
         .json({ message: "No se proporcionaron los datos" });
     }
 
-    const creteContent = await Contenido.create({
+    await Contenido.create({
       titulo,
       categoria,
       resumen,
@@ -86,8 +86,7 @@ const addNewContent = async (req, res) => {
       poster,
     });
 
-    console.log(creteContent);
-    return res.json(creteContent);
+    return res.status(200).json({ message: "Se creao el contenido exitosamente" });
   } catch (error) {
     console.log(error);
     res.status(500).send("Ocurrió un error al obtener los contenidos.");
