@@ -42,7 +42,7 @@ const getContentById = async (req, res) => {
   }
 };
 
-const getContentByTitle = async (req, res) =>{
+const getContentByTitle = async (req, res) => {
   try {
     const { title } = req.params;
     if (!title) {
@@ -57,14 +57,17 @@ const getContentByTitle = async (req, res) =>{
     if (!contentByTitle) {
       return res
         .status(404)
-        .json({ message: `No se encontro el contenido con el titulo ${title}` });
+        .json({
+          message: `No se encontro el contenido con el titulo ${title}`,
+        });
     }
 
     return res.status(200).json(contentByTitle);
   } catch (error) {
-    
+    console.log(error);
+    res.status(500).send("Ocurrió un error al obtener los contenidos.");
   }
-}
+};
 
 const addNewContent = async (req, res) => {
   try {
@@ -83,18 +86,47 @@ const addNewContent = async (req, res) => {
       poster,
     });
 
-    console.log(creteContent)
-    return res.json(creteContent)
+    console.log(creteContent);
+    return res.json(creteContent);
   } catch (error) {
     console.log(error);
     res.status(500).send("Ocurrió un error al obtener los contenidos.");
   }
 };
 
-const updateContentById = (req, res) => {
+const updateContentById = async (req, res) => {
   try {
-    const { contenidoID } = req.params;
-    const { titulo, categoria, resumen, temporadas, poster, genero } = req.body;
+    const { id } = req.params;
+    const { titulo, categoria, resumen, temporadas, poster } = req.body;
+
+    const contentById = await Contenido.findOne({
+      where: { id: parseInt(id) },
+    });
+
+    if (!contentById) {
+      return res
+        .status(404)
+        .json({
+          message: `No se encontro ningún contenido con este id ${contenidoID}`,
+        });
+    }
+
+    const updateContent = await Contenido.update(
+      { titulo, categoria, resumen, temporadas, poster }, // Campos a actualizar
+      { where: { id: parseInt(id) } }
+    );
+
+    if (updateContent === 0) {
+      return res.status(400).json({
+        message: `No se pudo actualizar el contenido. Es posible que los datos no hayan cambiado.`,
+      });
+    }
+
+    return res.status(200).json({
+      message: `El contenido con id ${id} ha sido actualizado exitosamente.`,
+    });
+
+  
   } catch (error) {
     console.log(error);
     res.status(500).send("Ocurrió un error al obtener los contenidos.");
@@ -103,6 +135,7 @@ const updateContentById = (req, res) => {
 
 const deleteContentById = (req, res) => {
   try {
+
   } catch (error) {
     console.log(error);
     res.status(500).send("Ocurrió un error al obtener los contenidos.");
