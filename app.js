@@ -1,16 +1,19 @@
 const express = require("express");
 const app = express();
 const router = require('./routes/routes')
-const db = require("./conexion/database");
-const Contenido = require("./models/contenido");
-const Genero = require("./models/genero");
-const ContenidoGenero = require("./models/contenido-genero");
+const sequelize = require("./conexion/database");
+const { Contenido, Categoria, Actor, Genero } = require("./models/associations");
 
-// Middlewares
-
-Contenido.belongsToMany(Genero, { through: ContenidoGenero, foreignKey: 'ContenidoId' });
-Genero.belongsToMany(Contenido, { through: ContenidoGenero, foreignKey: 'GeneroId' });
-
+app.use(async (req, res, next) => {
+  try {
+    await sequelize.sync({ force: false });
+    next();
+  } catch (error) {
+    res
+      .status(500)
+      .json({ error: "Error en el servidor", description: error.message });
+  }
+});
 app.use(express.json());
 app.use("/contenido", router);
 

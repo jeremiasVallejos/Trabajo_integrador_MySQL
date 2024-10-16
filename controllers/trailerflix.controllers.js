@@ -1,11 +1,26 @@
-const Categoria = require("../models/categoria");
-const Contenido = require("../models/contenido");
+
 const ContenidoActor = require("../models/contenido-actores");
 const ContenidoGenero = require("../models/contenido-genero");
+const { Contenido, Categoria, Actor, Genero } = require("../models/associations");
+
 
 const getAllContent = async (req, res) => {
   try {
-    const allContent = await Contenido.findAll();
+    const allContent = await Contenido.findAll({
+      include: [{
+        model: Categoria,
+        as: 'Categoria'
+      },
+      {
+        model: Genero,
+        as: 'Generos',
+      },
+      {
+        model: Actor,
+        as: 'Actores',
+      }]
+    }
+    );
 
     if (!allContent) {
       return res.status(404).json({ message: "No hay contenido" });
@@ -29,6 +44,18 @@ const getContentById = async (req, res) => {
 
     const contentById = await Contenido.findOne({
       where: { id: parseInt(id) },
+      include: [{
+        model: Categoria,
+        as: 'Categoria'
+      },
+      {
+        model: Genero,
+        as: 'Generos',
+      },
+      {
+        model: Actor,
+        as: 'Actores',
+      }]
     });
     if (!contentById) {
       return res
@@ -54,6 +81,18 @@ const getContentByTitle = async (req, res) => {
 
     const contentByTitle = await Contenido.findOne({
       where: { titulo: title },
+      include: [{
+        model: Categoria,
+        as: 'Categoria'
+      },
+      {
+        model: Genero,
+        as: 'Generos',
+      },
+      {
+        model: Actor,
+        as: 'Actores',
+      }]
     });
     if (!contentByTitle) {
       return res
@@ -72,66 +111,141 @@ const getContentByTitle = async (req, res) => {
 
 const addNewContent = async (req, res) => {
   try {
-    const { titulo, categoria, resumen, temporadas, poster } = req.body;
-    if (!titulo || !categoria) {
-      return res
-        .status(400)
-        .json({ message: "No se proporcionaron los datos" });
+    const { titulo, CategoriaId, resumen, temporadas, poster, actores = [], generos = [] } = req.body;
+
+    // Verificar si se proporcionaron los datos obligatorios
+    if (!titulo || !CategoriaId) {
+      return res.status(400).json({ message: "No se proporcionaron los datos requeridos" });
     }
 
-    await Contenido.create({
+    // Crear el contenido primero
+    const nuevoContenido = await Contenido.create({
       titulo,
-      categoria,
+      CategoriaId,
       resumen,
       temporadas,
       poster,
     });
 
-    return res.status(200).json({ message: "Se creao el contenido exitosamente" });
+    // Manejar actores (si hay)
+    if (actores.length > 0) {
+      const createdActores = await Actor.bulkCreate(
+        actores.map(nombre => ({ nombre })),
+        { returning: true }
+      );
+
+      // Obtener los IDs de los actores recién creados
+      const actorIds = createdActores.map(actor => actor.id);
+
+      // Crear las relaciones en ContenidoActor
+      await ContenidoActor.bulkCreate(
+        actorIds.map(actorId => ({
+          ContenidoId: nuevoContenido.id,
+          ActorId: actorId,
+        }))
+      );
+    }
+
+    // Manejar géneros (si hay)
+    if (generos.length > 0) {
+      const createdGeneros = await Genero.bulkCreate(
+        generos.map(nombre => ({ nombre })),
+        { returning: true }
+      );
+
+      // Obtener los IDs de los géneros recién creados
+      const generoIds = createdGeneros.map(genero => genero.id);
+
+      // Crear las relaciones en ContenidoGenero
+      await ContenidoGenero.bulkCreate(
+        generoIds.map(generoId => ({
+          ContenidoId: nuevoContenido.id,
+          GeneroId: generoId,
+        }))
+      );
+    }
+
+    return res.status(200).json({ message: "El contenido se creó exitosamente" });
+
   } catch (error) {
     console.log(error);
-    res.status(500).send("Ocurrió un error al obtener los contenidos.");
+    res.status(500).send("Ocurrió un error al crear el contenido.");
   }
 };
+
 
 const updateContentById = async (req, res) => {
   try {
     const { id } = req.params;
-    const { titulo, categoria, resumen, temporadas, poster } = req.body;
+    const { titulo, CategoriaId, resumen, temporadas, poster, actores = [], generos = [] } = req.body;
 
+    // Verificar si el contenido existe
     const contentById = await Contenido.findOne({
       where: { id: parseInt(id) },
     });
 
     if (!contentById) {
-      return res
-        .status(404)
-        .json({
-          message: `No se encontro ningún contenido con este id ${contenidoID}`,
-        });
+      return res.status(404).json({
+        message: `No se encontró ningún contenido con este id ${id}`,
+      });
     }
 
-    const updateContent = await Contenido.update(
-      { titulo, categoria, resumen, temporadas, poster }, // Campos a actualizar
+    // Actualizar el contenido principal
+      await Contenido.update(
+      { titulo, CategoriaId, resumen, temporadas, poster }, 
       { where: { id: parseInt(id) } }
     );
 
-    if (updateContent === 0) {
-      return res.status(400).json({
-        message: `No se pudo actualizar el contenido. Es posible que los datos no hayan cambiado.`,
-      });
+    // Actualizar actores (borrar los actuales y agregar los nuevos)
+    if (actores.length > 0) {
+      // Eliminar actores actuales relacionados con el contenido
+      await ContenidoActor.destroy({ where: { ContenidoId: parseInt(id) } });
+
+      // Crear nuevas relaciones con los actores proporcionados
+      const createdActores = await Actor.bulkCreate(
+        actores.map(nombre => ({ nombre })),
+        { returning: true }
+      );
+      const actorIds = createdActores.map(actor => actor.id);
+
+      await ContenidoActor.bulkCreate(
+        actorIds.map(actorId => ({
+          ContenidoId: parseInt(id),
+          ActorId: actorId,
+        }))
+      );
+    }
+
+    // Actualizar géneros (borrar los actuales y agregar los nuevos)
+    if (generos.length > 0) {
+      // Eliminar géneros actuales relacionados con el contenido
+      await ContenidoGenero.destroy({ where: { ContenidoId: parseInt(id) } });
+
+      // Crear nuevas relaciones con los géneros proporcionados
+      const createdGeneros = await Genero.bulkCreate(
+        generos.map(nombre => ({ nombre })),
+        { returning: true }
+      );
+      const generoIds = createdGeneros.map(genero => genero.id);
+
+      await ContenidoGenero.bulkCreate(
+        generoIds.map(generoId => ({
+          ContenidoId: parseInt(id),
+          GeneroId: generoId,
+        }))
+      );
     }
 
     return res.status(200).json({
       message: `El contenido con id ${id} ha sido actualizado exitosamente.`,
     });
 
-  
   } catch (error) {
     console.log(error);
-    res.status(500).send("Ocurrió un error al obtener los contenidos.");
+    res.status(500).send("Ocurrió un error al actualizar el contenido.");
   }
 };
+
 
 const deleteContentById = async (req, res) => {
   try {

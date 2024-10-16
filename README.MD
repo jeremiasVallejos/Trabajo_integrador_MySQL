@@ -95,7 +95,9 @@ Se recomienda usar Postman para la ejecución de los distintos endpoints.
     "categoria": 1,
     "resumen": "El paso a la edad adulta incluye sexo...",
     "temporadas": "5",
-    "poster": "/posters/2.jpg"
+    "poster": "/posters/2.jpg",
+    "actores": ["jeremias", "juan", "agustin"],
+    "generos": ["terror","suspenso"]
     }
      ```
 
@@ -116,7 +118,9 @@ Se recomienda usar Postman para la ejecución de los distintos endpoints.
     "categoria": 1,
     "resumen": "El paso a la edad adulta incluye sexo...",
     "temporadas": "2",
-    "poster": "/posters/2.jpg"
+    "poster": "/posters/2.jpg",
+    "actores": ["jeremias", "juan", "agustin"],
+    "generos": ["terror","suspenso"]
     }
     ```
 
